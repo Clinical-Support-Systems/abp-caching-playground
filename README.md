@@ -1,70 +1,152 @@
-﻿# AbpCachingPlayground
+﻿# ABP Caching Playground with .NET Aspire
 
-## About this solution
+This repository demonstrates various caching strategies using ABP Framework with .NET Aspire integration. It includes examples of both Redis and Fusion caching implementations in a distributed environment.
 
-This is a layered startup solution based on [Domain Driven Design (DDD)](https://docs.abp.io/en/abp/latest/Domain-Driven-Design) practises. All the fundamental ABP modules are already installed. Check the [Application Startup Template](https://abp.io/docs/latest/startup-templates/application/index) documentation for more info.
+## Todo
 
-### Pre-requirements
+- [x] Setup basics
+- [x] Data seeding
+- [ ] Can we get caching metrics in aspire?
+- [ ] Get fusion cache example working
 
-* [.NET9.0+ SDK](https://dotnet.microsoft.com/download/dotnet)
-* [Node v18 or 20](https://nodejs.org/en)
-* [Redis](https://redis.io/)
+## Prerequisites
 
-### Configurations
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet) or later
+- [Node.js](https://nodejs.org/) v18 or v20
+- [Redis](https://redis.io/) (for distributed caching)
+- [Docker](https://www.docker.com/) (optional, for containerized development)
 
-The solution comes with a default configuration that works out of the box. However, you may consider to change the following configuration before running your solution:
+## Solution Structure
 
-* Check the `ConnectionStrings` in `appsettings.json` files under the `AbpCachingPlayground.AuthServer`, `AbpCachingPlayground.HttpApi.Host` and `AbpCachingPlayground.DbMigrator` projects and change it if you need.
+The solution is organized into several projects:
 
-### Before running the application
+### Aspire Projects
+- `AbpCachingPlayground.FusionCacheAppHost` - Aspire host for Fusion Cache implementation
+- `AbpCachingPlayground.RedisCacheAppHost` - Aspire host for Redis Cache implementation
+- `AbpCachingPlayground.ServiceDefaults` - Shared service configurations
 
-* Run `abp install-libs` command on your solution folder to install client-side package dependencies. This step is automatically done when you create a new solution, if you didn't especially disabled it. However, you should run it yourself if you have first cloned this solution from your source control, or added a new client-side package dependency to your solution.
-* Run `AbpCachingPlayground.DbMigrator` to create the initial database. This step is also automatically done when you create a new solution, if you didn't especially disabled it. This should be done in the first run. It is also needed if a new database migration is added to the solution later.
+### Core Projects
+- `AbpCachingPlayground.Domain` - Domain layer
+- `AbpCachingPlayground.Domain.Shared` - Shared domain layer
+- `AbpCachingPlayground.Application.Contracts` - Application contracts
+- `AbpCachingPlayground.Application` - Application layer
+- `AbpCachingPlayground.EntityFrameworkCore` - EF Core integration
+- `AbpCachingPlayground.HttpApi` - HTTP API layer
+- `AbpCachingPlayground.HttpApi.Client` - HTTP API client
 
-#### Generating a Signing Certificate
+### Web Applications
+- `AbpCachingPlayground.AuthServer` - Authentication server
+- `AbpCachingPlayground.HttpApi.Host` - API host
+- `AbpCachingPlayground.Web` - Web application
 
-In the production environment, you need to use a production signing certificate. ABP Framework sets up signing and encryption certificates in your application and expects an `openiddict.pfx` file in your application.
+### Utility Projects
+- `AbpCachingPlayground.DbMigrator` - Database migration tool
+- `AbpCachingPlayground.TestBase` - Testing infrastructure
 
-To generate a signing certificate, you can use the following command:
+## Getting Started
 
+1. Clone the repository
 ```bash
-dotnet dev-certs https -v -ep openiddict.pfx -p c89dc56b-6dc1-405b-849c-06def5c70e82
+git clone [your-repository-url]
+cd AbpCachingPlayground
 ```
 
-> `c89dc56b-6dc1-405b-849c-06def5c70e82` is the password of the certificate, you can change it to any password you want.
+2. Install ABP CLI if you haven't already
+```bash
+dotnet tool install -g Volo.Abp.Cli
+```
 
-It is recommended to use **two** RSA certificates, distinct from the certificate(s) used for HTTPS: one for encryption, one for signing.
+3. Install client-side dependencies
+```bash
+abp install-libs
+```
 
-For more information, please refer to: [https://documentation.openiddict.com/configuration/encryption-and-signing-credentials.html#registering-a-certificate-recommended-for-production-ready-scenarios](https://documentation.openiddict.com/configuration/encryption-and-signing-credentials.html#registering-a-certificate-recommended-for-production-ready-scenarios)
+4. Set up the database
+```bash
+cd src/AbpCachingPlayground.DbMigrator
+dotnet run
+```
 
-> Also, see the [Configuring OpenIddict](https://docs.abp.io/en/abp/latest/Deployment/Configuring-OpenIddict#production-environment) documentation for more information.
+5. Generate development certificates (if needed)
+```bash
+dotnet dev-certs https -v -ep openiddict.pfx -p your-secure-password
+```
 
-### Solution structure
+6. Start the application using Aspire
+```bash
+cd aspire/AbpCachingPlayground.RedisCacheAppHost # or FusionCacheAppHost
+dotnet run
+```
 
-This is a layered monolith application that consists of the following applications:
+## Caching Implementations
 
-* `AbpCachingPlayground.DbMigrator`: A console application which applies the migrations and also seeds the initial data. It is useful on development as well as on production environment.
-* `AbpCachingPlayground.AuthServer`: ASP.NET Core MVC / Razor Pages application that is integrated OAuth 2.0(`OpenIddict`) and account modules. It is used to authenticate users and issue tokens.
-* `AbpCachingPlayground.HttpApi.Host`: ASP.NET Core API application that is used to expose the APIs to the clients.
-* `AbpCachingPlayground.Web`: ASP.NET Core MVC / Razor Pages application that is the essential web application of the solution.
+### Redis Cache
+The Redis implementation demonstrates distributed caching using Redis as the backing store. Key features include:
+- Distributed cache implementation
+- Cache invalidation strategies
+- Cache-aside pattern examples
 
+### Fusion Cache
+The Fusion implementation showcases memory caching with additional features:
+- In-memory caching
+- Double-checked locking pattern
+- Cache eviction policies
 
-## Deploying the application
+## Development Notes
 
-Deploying an ABP application is not different than deploying any .NET or ASP.NET Core application. However, there are some topics that you should care about when you are deploying your applications. You can check ABP's [Deployment documentation](https://docs.abp.io/en/abp/latest/Deployment/Index) and ABP Commercial's [Deployment documentation](https://abp.io/docs/latest/startup-templates/application/deployment?UI=MVC&DB=EF&Tiered=No) before deploying your application.
+- The solution uses .NET Aspire for orchestrating the microservices architecture
+- Both Redis and Fusion cache implementations are available for comparison
+- The `ServiceDefaults` project contains shared configuration that's applied across all services
+- Test projects are available under the `test` directory for each implementation
 
-### Additional resources
+## Configuration
 
-#### Internal Resources
+### Redis Configuration
+Update the Redis connection string in `appsettings.json`:
+```json
+{
+  "Redis": {
+    "Configuration": "localhost:6379"
+  }
+}
+```
 
-You can find detailed setup and configuration guide(s) for your solution below:
+### Cache Settings
+Cache settings can be modified in the respective host projects:
+```json
+{
+  "Cache": {
+    "DefaultExpirationTime": "00:30:00"
+  }
+}
+```
 
-* [Docker-Compose](./etc/docker-compose/README.md)
-* [Docker-Compose for Infrastructure Dependencies](./etc/docker/README.md)
-* [Local Kubernetes Guide](./etc/helm/README.md)
+## Testing
 
-#### External Resources
-You can see the following resources to learn more about your solution and the ABP Framework:
+Run the tests using:
+```bash
+dotnet test
+```
 
-* [Web Application Development Tutorial](https://abp.io/docs/latest/tutorials/book-store/part-1)
-* [Application Startup Template](https://abp.io/docs/latest/startup-templates/application/index)
+The test projects include:
+- Unit tests
+- Integration tests
+- Cache implementation tests
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## Additional Resources
+
+- [ABP Framework Documentation](https://docs.abp.io/)
+- [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
+- [Redis Documentation](https://redis.io/documentation)
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
