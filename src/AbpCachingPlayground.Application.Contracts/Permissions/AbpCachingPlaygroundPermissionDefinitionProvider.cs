@@ -16,6 +16,11 @@ public class AbpCachingPlaygroundPermissionDefinitionProvider : PermissionDefini
 
         //Define your own permissions here. Example:
         //myGroup.AddPermission(AbpCachingPlaygroundPermissions.MyPermission1, L("Permission:MyPermission1"));
+
+        var productPermission = myGroup.AddPermission(AbpCachingPlaygroundPermissions.Products.Default, L("Permission:Products"));
+        productPermission.AddChild(AbpCachingPlaygroundPermissions.Products.Create, L("Permission:Create"));
+        productPermission.AddChild(AbpCachingPlaygroundPermissions.Products.Edit, L("Permission:Edit"));
+        productPermission.AddChild(AbpCachingPlaygroundPermissions.Products.Delete, L("Permission:Delete"));
     }
 
     private static LocalizableString L(string name)

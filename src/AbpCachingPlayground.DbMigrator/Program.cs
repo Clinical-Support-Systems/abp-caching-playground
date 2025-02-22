@@ -8,9 +8,9 @@ using Serilog.Events;
 
 namespace AbpCachingPlayground.DbMigrator;
 
-class Program
+public class Program
 {
-    static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
@@ -33,8 +33,8 @@ class Program
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .AddAppSettingsSecretsJson()
-            .ConfigureLogging((context, logging) => logging.ClearProviders())
-            .ConfigureServices((hostContext, services) =>
+            .ConfigureLogging((_, logging) => logging.ClearProviders())
+            .ConfigureServices((_, services) =>
             {
                 services.AddHostedService<DbMigratorHostedService>();
             });

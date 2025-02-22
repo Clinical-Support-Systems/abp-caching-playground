@@ -147,7 +147,6 @@ public class AbpCachingPlaygroundWebModule : AbpModule
         });
     }
 
-
     private void ConfigureBackgroundJobs()
     {
         Configure<AbpBackgroundJobOptions>(options =>
@@ -177,6 +176,7 @@ public class AbpCachingPlaygroundWebModule : AbpModule
         {
             options.Conventions.AuthorizePage("/HostDashboard", AbpCachingPlaygroundPermissions.Dashboard.Host);
             options.Conventions.AuthorizePage("/TenantDashboard", AbpCachingPlaygroundPermissions.Dashboard.Tenant);
+            options.Conventions.AuthorizePage("/Products/Index", AbpCachingPlaygroundPermissions.Products.Default);
         });
     }
 
@@ -236,47 +236,47 @@ public class AbpCachingPlaygroundWebModule : AbpModule
                 options.Scope.Add("phone");
                 options.Scope.Add("AbpCachingPlayground");
             });
-            /*
-            * This configuration is used when the AuthServer is running on the internal network such as docker or k8s.
-            * Configuring the redirectin URLs for internal network and the web
-            */
-            if (configuration.GetValue<bool>("AuthServer:IsOnK8s"))
+        /*
+        * This configuration is used when the AuthServer is running on the internal network such as docker or k8s.
+        * Configuring the redirectin URLs for internal network and the web
+        */
+        if (configuration.GetValue<bool>("AuthServer:IsOnK8s"))
+        {
+            context.Services.Configure<OpenIdConnectOptions>("oidc", options =>
             {
-                context.Services.Configure<OpenIdConnectOptions>("oidc", options =>
+                options.TokenValidationParameters.ValidIssuers = new[]
                 {
-                    options.TokenValidationParameters.ValidIssuers = new[]
-                    {
                         configuration["AuthServer:MetaAddress"]!.EnsureEndsWith('/'),
                         configuration["AuthServer:Authority"]!.EnsureEndsWith('/')
-                    };
+                };
 
-                    options.MetadataAddress = configuration["AuthServer:MetaAddress"]!.EnsureEndsWith('/') +
-                                            ".well-known/openid-configuration";
+                options.MetadataAddress = configuration["AuthServer:MetaAddress"]!.EnsureEndsWith('/') +
+                                        ".well-known/openid-configuration";
 
-                    var previousOnRedirectToIdentityProvider = options.Events.OnRedirectToIdentityProvider;
-                    options.Events.OnRedirectToIdentityProvider = async ctx =>
+                var previousOnRedirectToIdentityProvider = options.Events.OnRedirectToIdentityProvider;
+                options.Events.OnRedirectToIdentityProvider = async ctx =>
+                {
+                    // Intercept the redirection so the browser navigates to the right URL in your host
+                    ctx.ProtocolMessage.IssuerAddress = configuration["AuthServer:Authority"]!.EnsureEndsWith('/') + "connect/authorize";
+
+                    if (previousOnRedirectToIdentityProvider != null)
                     {
-                        // Intercept the redirection so the browser navigates to the right URL in your host
-                        ctx.ProtocolMessage.IssuerAddress = configuration["AuthServer:Authority"]!.EnsureEndsWith('/') + "connect/authorize";
+                        await previousOnRedirectToIdentityProvider(ctx);
+                    }
+                };
+                var previousOnRedirectToIdentityProviderForSignOut = options.Events.OnRedirectToIdentityProviderForSignOut;
+                options.Events.OnRedirectToIdentityProviderForSignOut = async ctx =>
+                {
+                    // Intercept the redirection for signout so the browser navigates to the right URL in your host
+                    ctx.ProtocolMessage.IssuerAddress = configuration["AuthServer:Authority"]!.EnsureEndsWith('/') + "connect/logout";
 
-                        if (previousOnRedirectToIdentityProvider != null)
-                        {
-                            await previousOnRedirectToIdentityProvider(ctx);
-                        }
-                    };
-                    var previousOnRedirectToIdentityProviderForSignOut = options.Events.OnRedirectToIdentityProviderForSignOut;
-                    options.Events.OnRedirectToIdentityProviderForSignOut = async ctx =>
+                    if (previousOnRedirectToIdentityProviderForSignOut != null)
                     {
-                        // Intercept the redirection for signout so the browser navigates to the right URL in your host
-                        ctx.ProtocolMessage.IssuerAddress = configuration["AuthServer:Authority"]!.EnsureEndsWith('/') + "connect/logout";
-
-                        if (previousOnRedirectToIdentityProviderForSignOut != null)
-                        {
-                            await previousOnRedirectToIdentityProviderForSignOut(ctx);
-                        }
-                    };
-                });
-            }
+                        await previousOnRedirectToIdentityProviderForSignOut(ctx);
+                    }
+                };
+            });
+        }
 
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
@@ -361,7 +361,7 @@ public class AbpCachingPlaygroundWebModule : AbpModule
             dataProtectionBuilder.PersistKeysToStackExchangeRedis(redis, "AbpCachingPlayground-Protection-Keys");
         }
     }
-    
+
     private void ConfigureDistributedLocking(
         ServiceConfigurationContext context,
         IConfiguration configuration)

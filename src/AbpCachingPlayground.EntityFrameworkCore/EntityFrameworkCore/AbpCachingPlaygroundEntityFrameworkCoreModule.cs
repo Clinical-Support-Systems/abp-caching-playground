@@ -1,3 +1,4 @@
+using AbpCachingPlayground.Products;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Uow;
@@ -48,9 +49,11 @@ public class AbpCachingPlaygroundEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<AbpCachingPlaygroundDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
+            /* Remove "includeAllEntities: true" to create
+             * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
+            options.AddRepository<Product, Products.EfCoreProductRepository>();
+
         });
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
@@ -66,6 +69,6 @@ public class AbpCachingPlaygroundEntityFrameworkCoreModule : AbpModule
             options.UseSqlServer();
 
         });
-        
+
     }
 }

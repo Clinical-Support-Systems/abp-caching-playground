@@ -1,4 +1,6 @@
-﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Threading.Tasks;
 using Localization.Resources.AbpUi;
 using Microsoft.Extensions.Configuration;
@@ -56,11 +58,10 @@ public class AbpCachingPlaygroundMenuContributor : IMenuContributor
                 order: 1
             )
         );
-        
+
         //Administration
         var administration = context.Menu.GetAdministration();
         administration.Order = 5;
-        
 
         //Host Dashboard
         context.Menu.AddItem(
@@ -84,7 +85,6 @@ public class AbpCachingPlaygroundMenuContributor : IMenuContributor
             ).RequirePermissions(AbpCachingPlaygroundPermissions.Dashboard.Tenant)
         );
 
-        
         //Administration->Saas
         administration.SetSubItemOrder(SaasHostMenuNames.GroupName, 1);
 
@@ -105,7 +105,15 @@ public class AbpCachingPlaygroundMenuContributor : IMenuContributor
 
         //Administration->Settings
         administration.SetSubItemOrder(SettingManagementMenuNames.GroupName, 7);
-    
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AbpCachingPlaygroundMenus.Products,
+                l["Menu:Products"],
+                url: "/Products",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AbpCachingPlaygroundPermissions.Products.Default)
+        );
         return Task.CompletedTask;
     }
 
@@ -117,15 +125,14 @@ public class AbpCachingPlaygroundMenuContributor : IMenuContributor
         var uiResource = context.GetLocalizer<AbpUiResource>();
         var accountResource = context.GetLocalizer<AccountResource>();
 
-
         var authServerUrl = _configuration["AuthServer:Authority"] ?? "~";
 
-        context.Menu.AddItem(new ApplicationMenuItem("Account.LinkedAccounts", accountResource["LinkedAccounts"], url: "javascript:void(0)", icon: "fa fa-link"));   
+        context.Menu.AddItem(new ApplicationMenuItem("Account.LinkedAccounts", accountResource["LinkedAccounts"], url: "javascript:void(0)", icon: "fa fa-link"));
         if (currentUser.FindImpersonatorUserId() == null && authorityDelegationOptions.EnableDelegatedImpersonation)
         {
             context.Menu.AddItem(new ApplicationMenuItem("Account.AuthorityDelegation", accountResource["AuthorityDelegation"], url: "javascript:void(0)", icon: "fa fa-users"));
         }
-        
+
         context.Menu.AddItem(new ApplicationMenuItem("Account.Manage", accountResource["MyAccount"], $"{authServerUrl.EnsureEndsWith('/')}Account/Manage", icon: "fa fa-cog", order: 1000, target: "_blank").RequireAuthenticated());
         context.Menu.AddItem(new ApplicationMenuItem("Account.SecurityLogs", accountResource["MySecurityLogs"], $"{authServerUrl.EnsureEndsWith('/')}Account/SecurityLogs", icon: "fa fa-user-shield", target: "_blank").RequireAuthenticated());
         context.Menu.AddItem(new ApplicationMenuItem("Account.Sessions", accountResource["Sessions"], url: $"{authServerUrl.EnsureEndsWith('/')}Account/Sessions", icon: "fa fa-clock", target: "_blank").RequireAuthenticated());

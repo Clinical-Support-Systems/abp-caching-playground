@@ -1,3 +1,4 @@
+using AbpCachingPlayground.Products;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -29,8 +30,8 @@ public class AbpCachingPlaygroundDbContext :
     ISaasDbContext,
     IIdentityProDbContext
 {
+    public DbSet<Product> Products { get; set; } = null!;
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
-
 
     #region Entities from the modules
 
@@ -86,7 +87,7 @@ public class AbpCachingPlaygroundDbContext :
         builder.ConfigureTextTemplateManagement();
         builder.ConfigureGdpr();
         builder.ConfigureBlobStoring();
-        
+
         /* Configure your own tables/entities inside here */
 
         //builder.Entity<YourEntity>(b =>
@@ -95,5 +96,17 @@ public class AbpCachingPlaygroundDbContext :
         //    b.ConfigureByConvention(); //auto configure for the base class props
         //    //...
         //});
+        if (builder.IsHostDatabase())
+        {
+            builder.Entity<Product>(b =>
+            {
+                b.ToTable(AbpCachingPlaygroundConsts.DbTablePrefix + "Products", AbpCachingPlaygroundConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.Name).HasColumnName(nameof(Product.Name)).IsRequired();
+                b.Property(x => x.Description).HasColumnName(nameof(Product.Description));
+                b.Property(x => x.Price).HasColumnName(nameof(Product.Price)).HasPrecision(18, 2);
+            });
+
+        }
     }
 }

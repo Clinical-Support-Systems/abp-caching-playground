@@ -1,0 +1,123 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@using Volo.Abp.AspNetCore.Mvc.UI.Layout
+@using AbpCachingPlayground.Permissions
+@using AbpCachingPlayground.Web.Pages.Products
+@using AbpCachingPlayground.Web.Menus
+@using Microsoft.AspNetCore.Mvc.Localization
+@using AbpCachingPlayground.Localization
+@inject IHtmlLocalizer<AbpCachingPlaygroundResource> L
+@inject IAuthorizationService Authorization
+@model IndexModel
+@inject IPageLayout PageLayout
+@{
+    PageLayout.Content.Title = L["Products"].Value;
+    PageLayout.Content.MenuItemName = AbpCachingPlaygroundMenus.Products;
+}
+
+@section styles
+{
+@*//<suite-custom-code-block-1>*@
+@*//</suite-custom-code-block-1>*@
+}
+
+@section scripts
+{
+    <abp-script src="/Pages/Products/index.js" />
+@*//<suite-custom-code-block-2>*@
+@*//</suite-custom-code-block-2>*@
+}
+
+@section content_toolbar {
+    <abp-button id="ExportToExcelButton" text="@L["ExportToExcel"].Value" icon="download" size="Small" button-type="Primary" />
+    @if (await Authorization.IsGrantedAsync(AbpCachingPlaygroundPermissions.Products.Create))
+    {
+        <abp-button id="NewProductButton" text="@L["NewProduct"].Value" icon="plus" size="Small" button-type="Primary" />
+    }
+@*//<suite-custom-code-block-3>*@
+@*//</suite-custom-code-block-3>*@
+}
+
+@*//<suite-custom-code-block-4>*@
+@*//</suite-custom-code-block-4>*@
+
+<abp-card>
+    <abp-card-body>
+		<abp-row class="mb-3">
+            <abp-column size-md="_8" size-lg="_10">
+                <div class="mb-3">
+                    <form id="SearchForm" autocomplete="off">
+                        <div class="input-group">
+                            <input class="form-control page-search-filter-text" id="FilterText" placeholder="@L["Search"]"/>
+                            <abp-button button-type="Primary" type="submit" icon="search"/>
+                        </div>
+                    </form>
+                </div>
+            </abp-column>
+            <abp-column size-md="_4" size-lg="_2">
+                <div class="mb-3">
+                    <abp-button style="width:100%" id="AdvancedFilterSectionToggler" button-type="Outline_Primary">
+                        @L["Filters"]<i aria-hidden="true" class="fa ms-1 fa-angle-down"></i>
+                    </abp-button>
+                </div>
+            </abp-column>
+        </abp-row>
+
+        <abp-row id="AdvancedFilterSection" class="mt-3" style="display: none;">
+            <abp-column size="_3">
+                <abp-input asp-for="NameFilter" label="@L["Name"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="DescriptionFilter" label="@L["Description"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="PriceFilterMin" label="@L["MinPrice"].Value" />
+            </abp-column>
+            <abp-column size="_3">
+                <abp-input asp-for="PriceFilterMax" label="@L["MaxPrice"].Value" />
+            </abp-column>
+@*//<suite-custom-code-block-5>*@
+@*//</suite-custom-code-block-5>*@
+        </abp-row>
+        
+        <div id="bulk-delete-context-menu" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <p class="lead mb-0 d-none" id="items-selected-info-message"></p>
+                            
+                <div>
+                    <button class="btn btn-outline-secondary d-none mx-1" id="select-all-items-btn"></button>
+                                
+                    <button class="btn btn-outline-secondary d-none mx-1" id="clear-selection-btn">
+                        @L["ClearSelection"]
+                    </button>
+                                
+                    <button class="btn btn-danger mx-1" id="delete-selected-items">
+                        <i class="fa fa-trash"></i> @L["Delete"]
+                    </button>
+                </div>
+                
+            </div>
+            
+            <hr class="my-1 mx-0"/>
+        </div>
+
+        <abp-table striped-rows="true" id="ProductsTable">
+            <thead>
+				<tr>
+				    <th id="BulkDeleteCheckboxTheader"><input type="checkbox" id="select_all" class="form-check-input" /></th>
+				    
+					<th>@L["Actions"]</th>
+					<th>@L["Name"]</th>
+					<th>@L["Description"]</th>
+					<th>@L["Price"]</th>
+
+@*//<suite-custom-code-block-6>*@
+@*//</suite-custom-code-block-6>*@
+				</tr>
+            </thead>
+        </abp-table>
+    </abp-card-body>
+</abp-card>
+
+@*//<suite-custom-code-block-7>*@
+@*//</suite-custom-code-block-7>*@

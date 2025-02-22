@@ -1,4 +1,4 @@
-﻿namespace AbpCachingPlayground.Web.Menus;
+namespace AbpCachingPlayground.Web.Menus;
 
 public class AbpCachingPlaygroundMenus
 {
@@ -7,6 +7,9 @@ public class AbpCachingPlaygroundMenus
     public const string Home = Prefix + ".Home";
 
     public const string HostDashboard = Prefix + ".HostDashboard";
-    
+
     public const string TenantDashboard = Prefix + ".TenantDashboard";
+
+    public const string Products = Prefix + ".Products";
+
 }

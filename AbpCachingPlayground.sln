@@ -53,6 +53,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fusion", "fusion", "{DFDDE9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{652BC532-ECAB-42AE-8CB5-9F4189A1C700}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k6", "k6", "{D4FFF078-8FA0-4BD8-BB27-0BA170845E31}"
+	ProjectSection(SolutionItems) = preProject
+		test\AbpCachingPlayground.k6\scenarios\basic-crud.js = test\AbpCachingPlayground.k6\scenarios\basic-crud.js
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbpFusionCache", "src\AbpFusionCache\AbpFusionCache.csproj", "{006C8111-E7EB-4DCA-B9C3-C62AD901577A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +142,10 @@ Global
 		{D26AF543-8237-4E8C-A7DC-E666C2B0AE3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D26AF543-8237-4E8C-A7DC-E666C2B0AE3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D26AF543-8237-4E8C-A7DC-E666C2B0AE3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{006C8111-E7EB-4DCA-B9C3-C62AD901577A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{006C8111-E7EB-4DCA-B9C3-C62AD901577A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{006C8111-E7EB-4DCA-B9C3-C62AD901577A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{006C8111-E7EB-4DCA-B9C3-C62AD901577A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -162,6 +173,8 @@ Global
 		{9E4ABEDD-448C-487D-B135-52F28C50AD3E} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{DFDDE987-6576-4563-981C-D82EC59A7106} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
 		{652BC532-ECAB-42AE-8CB5-9F4189A1C700} = {CA9AC87F-097E-4F15-8393-4BC07735A5B0}
+		{D4FFF078-8FA0-4BD8-BB27-0BA170845E31} = {04DBDB01-70F4-4E06-B468-8F87850B22BE}
+		{006C8111-E7EB-4DCA-B9C3-C62AD901577A} = {DFDDE987-6576-4563-981C-D82EC59A7106}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28315BFD-90E7-4E14-A2EA-F3D23AF4126F}

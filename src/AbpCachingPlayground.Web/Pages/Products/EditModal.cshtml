@@ -1,0 +1,50 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using AbpCachingPlayground.Localization
+@using AbpCachingPlayground.Web.Pages.Products
+@using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal
+@using AbpCachingPlayground.Products;
+@using System.Globalization
+@inject IHtmlLocalizer<AbpCachingPlaygroundResource> L
+@model EditModalModel
+@{
+    Layout = null;
+}
+
+<form data-ajaxForm="true" asp-page="/Products/EditModal" autocomplete="off">
+    <abp-modal id="ProductEditModal">
+        <abp-modal-header title="@L["Update"].Value"></abp-modal-header>
+
+        <abp-modal-body>
+@*//<suite-custom-code-block-1>*@
+@*//</suite-custom-code-block-1>*@
+
+            <abp-input asp-for="Id" />
+
+                
+                    
+                    <abp-input asp-for="Product.ConcurrencyStamp" hidden="true" suppress-label="true"/>
+                    
+
+            <abp-input asp-for="Product.Name"    />
+
+
+            <abp-input asp-for="Product.Description" text-area   />
+
+
+            <abp-input asp-for="Product.Price"   data-val="false" />
+
+                    
+                
+@*//<suite-custom-code-block-2>*@
+@*//</suite-custom-code-block-2>*@
+@*//<suite-custom-code-block-3>*@
+@*//</suite-custom-code-block-3>*@
+        </abp-modal-body>
+
+        <abp-modal-footer buttons="@(AbpModalButtons.Cancel|AbpModalButtons.Save)">
+@*//<suite-custom-code-block-4>*@
+@*//</suite-custom-code-block-4>*@
+        </abp-modal-footer>
+    </abp-modal>
+</form>
