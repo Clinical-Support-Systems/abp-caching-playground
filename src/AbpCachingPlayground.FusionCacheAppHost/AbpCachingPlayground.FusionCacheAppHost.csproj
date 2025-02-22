@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>beb0bb78-419e-421b-a40f-a7d13a5ee078</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AbpCachingPlayground.AuthServer\AbpCachingPlayground.AuthServer.csproj" />
+    <ProjectReference Include="..\AbpCachingPlayground.DbMigrator\AbpCachingPlayground.DbMigrator.csproj" />
+    <ProjectReference Include="..\AbpCachingPlayground.HttpApi.Host\AbpCachingPlayground.HttpApi.Host.csproj" />
+    <ProjectReference Include="..\AbpCachingPlayground.ServiceDefaults\AbpCachingPlayground.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\AbpCachingPlayground.Web\AbpCachingPlayground.Web.csproj" />
+  </ItemGroup>
+
+</Project>

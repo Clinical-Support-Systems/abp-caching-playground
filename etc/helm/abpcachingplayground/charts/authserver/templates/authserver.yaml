@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-{{ .Chart.Name }}"
+spec:
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-{{ .Chart.Name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-{{ .Chart.Name }}"
+    spec:
+      containers:
+      - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        name: "{{ .Release.Name }}-{{ .Chart.Name }}"
+        ports:
+        - name: "http"
+          containerPort: 80
+        env:
+        - name: "DOTNET_ENVIRONMENT"
+          value: "{{ .Values.global.dotnetEnvironment }}"
+        - name: "ConnectionStrings__Default"
+          value: "{{ .Values.global.connectionStrings.default | replace "[RELEASE_NAME]" .Release.Name }}"
+        - name: "App__SelfUrl"
+          value: "{{ include "abpcachingplayground.hosts.authserver" . }}"
+        - name: "App__CorsOrigins"
+          value: "https://*.AbpCachingPlayground.com, {{ include "abpcachingplayground.hosts.httpapi" . }}"
+        - name: App__RedirectAllowedUrls
+          value: "{{ include "abpcachingplayground.hosts.web" . }}"
+        - name: App__DisablePII
+          value: "{{ .Values.global.disablePII }}"
+        - name: "AuthServer__Authority"
+          value: "{{ include "abpcachingplayground.hosts.authserver" . }}"
+        - name: "AuthServer__RequireHttpsMetadata"
+          value: "false"
+        - name: "Redis__Configuration"
+          value: "{{ .Release.Name }}-redis"
+        - name: "StringEncryption__DefaultPassPhrase"
+          value: "{{ .Values.global.stringEncryptionDefaultPassPhrase }}"
+        - name: "AbpStudioClient__StudioUrl"
+          value: "{{ .Values.global.abpStudioClient.studioUrl }}"
+        - name: "AbpStudioClient__IsLinkEnabled"
+          value: "{{ .Values.global.abpStudioClient.isLinkEnabled }}"

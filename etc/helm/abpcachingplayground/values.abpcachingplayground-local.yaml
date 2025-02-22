@@ -1,0 +1,13 @@
+global:
+  hosts:
+    dbmigrator: "[RELEASE_NAME]-dbmigrator"
+    web: "[RELEASE_NAME]-web"
+    httpapi: "[RELEASE_NAME]-httpapihost"
+    authserver: "[RELEASE_NAME]-authserver"
+  connectionStrings:
+    default: "Server=[RELEASE_NAME]-sqlserver,1433; Database=AbpCachingPlayground; User Id=sa; Password=myPassw@rd; TrustServerCertificate=True"
+  dotnetEnvironment: "Staging"
+  disablePII: "false"
+  stringEncryptionDefaultPassPhrase: "VhkoUtmT7Ajx2Vfx"
+  abpStudioClient:
+    isLinkEnabled: "true"

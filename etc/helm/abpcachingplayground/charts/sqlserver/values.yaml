@@ -1,0 +1,5 @@
+port: 1433
+sa_password: "myPassw@rd"
+image:
+  repository: "mcr.microsoft.com/azure-sql-edge"
+  tag: "1.0.7"

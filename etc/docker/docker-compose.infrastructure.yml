@@ -1,0 +1,14 @@
+version: '3.7'
+  
+networks:
+  abpcachingplayground:
+    external: true
+
+services:
+  redis:
+    container_name: redis
+    image: redis:7.2.2-alpine
+    networks:
+      - abpcachingplayground
+    ports:
+      - "6379:6379"

@@ -1,0 +1,4 @@
+image:
+  repository: "abpcachingplayground/authserver"
+  tag: "latest"
+  pullPolicy: IfNotPresent

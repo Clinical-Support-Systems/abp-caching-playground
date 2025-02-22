@@ -1,0 +1,41 @@
+﻿{
+  "applications": {
+    "Docker-Dependencies": {
+      "type": "cli",
+      "startCommand": "./up.ps1",
+      "stopCommand": "./down.ps1",
+      "workingDirectory": "../../docker",
+      "folder": "infrastructure",
+      "execution": {
+        "order": 5
+      }
+    },
+    "AbpCachingPlayground.AuthServer": {
+      "type": "dotnet-project",
+      "launchUrl": "https://localhost:44347",
+      "path": "../../../src/AbpCachingPlayground.AuthServer/AbpCachingPlayground.AuthServer.csproj",
+      "kubernetesService": ".*-authserver$",
+      "execution": {
+        "order": 3
+      }
+    },
+    "AbpCachingPlayground.HttpApi.Host": {
+      "type": "dotnet-project",
+      "launchUrl": "https://localhost:44300",
+      "path": "../../../src/AbpCachingPlayground.HttpApi.Host/AbpCachingPlayground.HttpApi.Host.csproj",
+      "kubernetesService": ".*-httpapihost$",
+      "execution": {
+        "order": 4
+      }
+    },
+    "AbpCachingPlayground.Web": {
+      "type": "dotnet-project",
+      "launchUrl": "https://localhost:44319",
+      "path": "../../../src/AbpCachingPlayground.Web/AbpCachingPlayground.Web.csproj",
+      "kubernetesService": ".*-web$",
+      "execution": {
+        "order": 2
+      }
+    }
+  }
+}

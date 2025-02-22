@@ -1,0 +1,4 @@
+image:
+  repository: "abpcachingplayground/httpapihost"
+  tag: "latest"
+  pullPolicy: IfNotPresent
