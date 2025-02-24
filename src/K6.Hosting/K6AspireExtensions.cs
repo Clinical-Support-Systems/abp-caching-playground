@@ -27,6 +27,7 @@ public static class K6AspireExtensions
             .WithImage(ContainerImageTags.K6Image)
             .WithImageRegistry(ContainerImageTags.K6Registry)
             .WithImageTag(ContainerImageTags.K6Tag)
+            .WithContainerName("k6-kori")
             .WithEnvironment("K6_INSECURE_SKIP_TLS_VERIFY", "true")
             .WithEndpoint(0, 6565, name: "k6-api")
             .WithBindMount(scriptDir, "/scripts")
@@ -65,13 +66,20 @@ public static class K6AspireExtensions
     {
         var logger = context.ServiceProvider.GetRequiredService<ResourceLoggerService>().GetLogger(builder.Resource);
         var notificationService = context.ServiceProvider.GetRequiredService<ResourceNotificationService>();
+        var containerName = "k6-kori";
 
+        await notificationService.PublishUpdateAsync(builder.Resource, state => state with
+        {
+            State = new ResourceStateSnapshot("Starting k6 test...", KnownResourceStates.Starting)
+        }).ConfigureAwait(false);
+
+        // Use Docker CLI to execute the command inside the running container
         var p = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "run",
-                Arguments = $"/scripts/{Path.GetFileName(builder.Resource.ScriptPath)}",
+                FileName = "docker",
+                Arguments = $"exec {containerName} k6 run /scripts/{Path.GetFileName(builder.Resource.ScriptPath)}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -87,7 +95,10 @@ public static class K6AspireExtensions
             }
 
             logger.LogInformation("{Data}", args.Data);
-            await notificationService.PublishUpdateAsync(builder.Resource, state => state with { State = new ResourceStateSnapshot(args.Data, KnownResourceStates.Starting) }).ConfigureAwait(false);
+            await notificationService.PublishUpdateAsync(builder.Resource, state => state with
+            {
+                State = new ResourceStateSnapshot(args.Data, KnownResourceStates.Starting)
+            }).ConfigureAwait(false);
         };
 
         p.ErrorDataReceived += async (_, args) =>
@@ -98,7 +109,10 @@ public static class K6AspireExtensions
             }
 
             logger.LogError("{Data}", args.Data);
-            await notificationService.PublishUpdateAsync(builder.Resource, state => state with { State = new ResourceStateSnapshot(args.Data, KnownResourceStates.Starting) }).ConfigureAwait(false);
+            await notificationService.PublishUpdateAsync(builder.Resource, state => state with
+            {
+                State = new ResourceStateSnapshot(args.Data, KnownResourceStates.Starting)
+            }).ConfigureAwait(false);
         };
 
         p.Start();
@@ -109,6 +123,11 @@ public static class K6AspireExtensions
 
         if (p.ExitCode == 0)
         {
+            await notificationService.PublishUpdateAsync(builder.Resource, state => state with
+            {
+                State = new ResourceStateSnapshot("K6 test completed successfully", KnownResourceStates.Running)
+            }).ConfigureAwait(false);
+
             return new ExecuteCommandResult() { Success = true };
         }
 
