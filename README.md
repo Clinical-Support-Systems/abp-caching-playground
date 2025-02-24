@@ -63,18 +63,7 @@ dotnet tool install -g Volo.Abp.Cli
 abp install-libs
 ```
 
-4. Set up the database
-```bash
-cd src/AbpCachingPlayground.DbMigrator
-dotnet run
-```
-
-5. Generate development certificates (if needed)
-```bash
-dotnet dev-certs https -v -ep openiddict.pfx -p your-secure-password
-```
-
-6. Start the application using Aspire
+5. Start the application using Aspire
 ```bash
 cd aspire/AbpCachingPlayground.RedisCacheAppHost # or FusionCacheAppHost
 dotnet run
