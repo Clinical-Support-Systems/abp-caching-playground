@@ -23,7 +23,8 @@ export default function () {
         }
     };
 
-    const response = http.get("http://localhost:5000/api/cache-test/item/1", params);
+    //const response = http.get("http://localhost:5000/api/cache-test/item/1", params);
+    const response = http.get("https://host.docker.internal:44319/");
     check(response, {
         'status is 200': (r) => r.status === 200
     });
