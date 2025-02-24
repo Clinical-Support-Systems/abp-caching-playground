@@ -1,5 +1,8 @@
 ﻿using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace K6.Hosting;
 
@@ -18,15 +21,113 @@ public static class K6AspireExtensions
         var resource = new K6Resource(name, scriptPath);
         var scriptFileName = Path.GetFileName(scriptPath);
 
+        //// Get string[] of scripts in scriptPath which aren't verify.js
+        //var testScriptFiles = Directory.GetFiles(Path.GetDirectoryName(scriptPath), "*.js")
+        //    .Where(file => file != scriptPath)
+        //    .Select(Path.GetFileName)
+        //    .ToArray();
+
         // let's use the k6 docker image here
-        return builder.AddResource(resource)
+        var resourceBuilder = builder.AddResource(resource)
             .WithImage(ContainerImageTags.K6Image)
             .WithImageRegistry(ContainerImageTags.K6Registry)
             .WithImageTag(ContainerImageTags.K6Tag)
             .WithEnvironment("K6_INSECURE_SKIP_TLS_VERIFY", "true")
             .WithEndpoint(0, 6565, name: "k6-api")
             .WithBindMount(Path.GetDirectoryName(Path.GetFullPath(scriptPath)), "/scripts")
-            .WithArgs("run", $"/scripts/{scriptFileName}", "--out", "influxdb=http://influxdb:8086/k6");
+            .WithArgs("k6", "run", $"/scripts/verify.js")
+            .WithTestCommand(scriptFileName);
+
+        //builder.Eventing.Subscribe<AfterEndpointsAllocatedEvent>(async (e, ct) => { 
+        //    resourceBuilder.WithArgs("k6", "run", $"/scripts/{scriptFileName}");
+        //});
+
+        return resourceBuilder;
+    }
+
+    public static IResourceBuilder<K6Resource> WithTestCommand(this IResourceBuilder<K6Resource> builder, string testScriptFile)
+    {
+        builder.Resource.ScriptPath = testScriptFile;
+
+        builder.WithCommand(
+            name: "run-test",
+            displayName: "Run Test",
+            executeCommand: context => OnRunTestCommandAsync(builder, context),
+            updateState: OnUpdateResourceState);
+
+        return builder;
+    }
+
+    private static ResourceCommandState OnUpdateResourceState(UpdateCommandStateContext context)
+    {
+        return context.ResourceSnapshot.State switch
+        {
+            { Text: "Stopped" } or
+            { Text: "Exited" } or
+            { Text: "Finished" } or
+            { Text: "FailedToStart" } => ResourceCommandState.Enabled,
+            _ => ResourceCommandState.Disabled
+        };
+    }
+
+    private static async Task<ExecuteCommandResult> OnRunTestCommandAsync(IResourceBuilder<K6Resource> builder, ExecuteCommandContext context)
+    {
+        var logger = context.ServiceProvider.GetRequiredService<ResourceLoggerService>().GetLogger(builder.Resource);
+        var notificationService = context.ServiceProvider.GetRequiredService<ResourceNotificationService>();
+
+
+        var p = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "k6",
+                Arguments = $"run --insecure-skip-tls-verify /scripts/{Path.GetFileName(builder.Resource.ScriptPath)}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        p.OutputDataReceived += async (_, args) =>
+        {
+            if (string.IsNullOrEmpty(args.Data))
+            {
+                return;
+            }
+
+            logger.LogInformation("{Data}", args.Data);
+            await notificationService.PublishUpdateAsync(builder.Resource, state => state with { State = new(args.Data, KnownResourceStates.Starting) }).ConfigureAwait(false);
+        };
+
+        p.ErrorDataReceived += async (_, args) =>
+        {
+            if (string.IsNullOrEmpty(args.Data))
+            {
+                return;
+            }
+
+            logger.LogError("{Data}", args.Data);
+            await notificationService.PublishUpdateAsync(builder.Resource, state => state with { State = new(args.Data, KnownResourceStates.Starting) }).ConfigureAwait(false);
+        };
+
+        p.Start();
+        p.BeginOutputReadLine();
+        p.BeginErrorReadLine();
+
+        await p.WaitForExitAsync(context.CancellationToken).ConfigureAwait(false);
+
+        if (p.ExitCode == 0)
+        {
+            return new ExecuteCommandResult() { Success = true };
+        }
+
+        await notificationService.PublishUpdateAsync(builder.Resource, state => state with
+        {
+            State = new($"k6 exited with {p.ExitCode}", KnownResourceStates.FailedToStart)
+        }).ConfigureAwait(false);
+
+        return new ExecuteCommandResult() { Success = false, ErrorMessage = "Failed to run k6 script" };
     }
 
     /// <summary>
@@ -62,11 +163,11 @@ public static class K6AspireExtensions
 
 public sealed class K6Resource : ContainerResource
 {
-    private readonly string _scriptPath;
+    public string ScriptPath { get; set; }
 
     public K6Resource(string name, string scriptPath) : base(name)
     {
-        _scriptPath = scriptPath ?? throw new ArgumentNullException(nameof(scriptPath));
+        ScriptPath = scriptPath ?? throw new ArgumentNullException(nameof(scriptPath));
     }
 }
 
