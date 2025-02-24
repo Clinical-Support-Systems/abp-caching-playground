@@ -35,8 +35,10 @@ public static class K6AspireExtensions
             .WithEnvironment("K6_INSECURE_SKIP_TLS_VERIFY", "true")
             .WithEndpoint(0, 6565, name: "k6-api")
             .WithBindMount(Path.GetDirectoryName(Path.GetFullPath(scriptPath)), "/scripts")
-            .WithArgs("k6", "run", $"/scripts/verify.js")
-            .WithTestCommand(scriptFileName);
+            .WithArgs("run", $"/scripts/{scriptFileName}", "--out", "influxdb=http://influxdb:8086/k6");
+
+        //.WithArgs("k6", "run", $"/scripts/verify.js")
+        //.WithTestCommand(scriptFileName);
 
         //builder.Eventing.Subscribe<AfterEndpointsAllocatedEvent>(async (e, ct) => { 
         //    resourceBuilder.WithArgs("k6", "run", $"/scripts/{scriptFileName}");
