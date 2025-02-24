@@ -62,6 +62,17 @@ public class AbpCachingPlaygroundHttpApiHostModule : AbpModule
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
+
+        //// Take the configured redis connection from ConnectionStrings:Redis
+        //var redisConnection = configuration["ConnectionStrings:Redis"] ?? string.Empty;
+
+        //// Append `,allowAdmin=true` if it's not already there
+        //if (!redisConnection.Contains("allowAdmin=true", StringComparison.OrdinalIgnoreCase))
+        //{
+        //    redisConnection += (redisConnection.EndsWith(',') ? "" : ",") + "allowAdmin=true";
+        //}
+
+        // Overwrite Redis:Configuration with your updated connection string
         configuration["Redis:Configuration"] = configuration["ConnectionStrings:Redis"];
     }
 
@@ -83,6 +94,7 @@ public class AbpCachingPlaygroundHttpApiHostModule : AbpModule
         ConfigureCache(configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureDataProtection(context, configuration, hostingEnvironment);
+        ConfigureRedis(context, configuration);
         ConfigureDistributedLocking(context, configuration);
         ConfigureCors(context, configuration);
         ConfigureExternalProviders(context);
@@ -91,6 +103,16 @@ public class AbpCachingPlaygroundHttpApiHostModule : AbpModule
         Configure<PermissionManagementOptions>(options =>
         {
             options.IsDynamicPermissionStoreEnabled = true;
+        });
+    }
+
+    private void ConfigureRedis(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        Configure<RedisCacheOptions>(options =>
+        {
+            //var config = ConfigurationOptions.Parse(configuration["Redis:Configuration"]);
+            //config.AllowAdmin = true;
+            //options.ConfigurationOptions = config;
         });
     }
 

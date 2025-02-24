@@ -1,4 +1,11 @@
+
+
+using Aspire.Hosting.Lifecycle;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -8,7 +15,7 @@ var sql = builder
 
 var db = sql.AddDatabase("AbpCachingPlayground");
 
-var redis = builder.AddRedis("redis");
+var redis = builder.AddRedis("redis").WithRedisInsight();
 
 // DbMigrator  
 IResourceBuilder<ProjectResource>? migration = null;

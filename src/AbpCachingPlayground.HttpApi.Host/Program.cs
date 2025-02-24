@@ -34,6 +34,7 @@ public class Program
             builder.AddServiceDefaults();
             builder.AddRedisClient("redis");
             builder.AddRedisDistributedCache("redis");
+            builder.AddRedisMetrics();
             builder.AddSqlServerDbContext<AbpCachingPlaygroundDbContext>("Default", options =>
             {
                 options.DisableRetry = true;
