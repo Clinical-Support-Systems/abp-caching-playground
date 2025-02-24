@@ -6,7 +6,8 @@ This repository demonstrates various caching strategies using ABP Framework with
 
 - [x] Setup basics
 - [x] Data seeding
-- [ ] Can we get caching metrics in aspire?
+- [x] Can we get caching metrics in aspire?
+- [ ] Make sure we're doing sensible caching of products
 - [ ] Get fusion cache example working
 
 ## Prerequisites
