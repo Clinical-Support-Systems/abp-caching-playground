@@ -1,6 +1,7 @@
 
 
 using Aspire.Hosting.Lifecycle;
+using K6.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,16 @@ var sql = builder
 var db = sql.AddDatabase("AbpCachingPlayground");
 
 var redis = builder.AddRedis("redis").WithRedisInsight();
+var influxDb = builder.AddInfluxDb("influxdb");
+
+var grafana = builder.AddGrafana("grafana", dashboardsPath: "./../../test/AbpCachingPlayground.k6/dashboards")
+    .WithReference(influxDb).WaitFor(influxDb)
+    .WithInfluxDataSource(influxDb, datasourceConfigPath: "./../../test/AbpCachingPlayground.k6/grafana-datasource.yaml")
+    .WithDashboardConfig("./../../test/AbpCachingPlayground.k6/grafana-dashboard.yaml");
+
+var k6 = builder.AddK6("k6", scriptPath: "./../../test/AbpCachingPlayground.k6/scenarios/basic-crud.js")
+    .WithInfluxDbOutput(influxDb)
+    .WithHostGatewayAccess();
 
 // DbMigrator  
 IResourceBuilder<ProjectResource>? migration = null;

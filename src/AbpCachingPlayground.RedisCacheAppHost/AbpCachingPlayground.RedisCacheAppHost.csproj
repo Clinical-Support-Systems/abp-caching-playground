@@ -23,6 +23,7 @@
     <ProjectReference Include="..\AbpCachingPlayground.HttpApi.Host\AbpCachingPlayground.HttpApi.Host.csproj" />
     <ProjectReference Include="..\AbpCachingPlayground.ServiceDefaults\AbpCachingPlayground.ServiceDefaults.csproj" />
     <ProjectReference Include="..\AbpCachingPlayground.Web\AbpCachingPlayground.Web.csproj" />
+    <ProjectReference Include="..\K6.Hosting\K6.Hosting.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 
 </Project>
