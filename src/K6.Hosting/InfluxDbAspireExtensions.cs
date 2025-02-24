@@ -29,6 +29,9 @@ public static class InfluxDbAspireExtensions
 }
 public sealed class InfluxDbResource : ContainerResource, IResourceWithConnectionString
 {
+    private const string DefaultHost = "influxdb";
+    private const int DefaultPort = 8086;
+
     public InfluxDbResource(string name) : base(name)
     {
         // Define the primary endpoint in the constructor
