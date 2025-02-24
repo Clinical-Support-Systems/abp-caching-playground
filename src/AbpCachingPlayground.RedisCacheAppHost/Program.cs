@@ -1,5 +1,3 @@
-
-
 using Aspire.Hosting.Lifecycle;
 using K6.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,10 +23,11 @@ var grafana = builder.AddGrafana("grafana", dashboardsPath: "./../../test/AbpCac
     .WithDashboardConfig("./../../test/AbpCachingPlayground.k6/grafana-dashboard.yaml");
 
 var k6 = builder.AddK6("k6", scriptPath: "./../../test/AbpCachingPlayground.k6/scenarios/basic-crud.js")
+    .WaitFor(grafana)
     .WithInfluxDbOutput(influxDb)
     .WithHostGatewayAccess();
 
-// DbMigrator  
+// DbMigrator
 IResourceBuilder<ProjectResource>? migration = null;
 if (builder.Environment.IsDevelopment())
 {
@@ -38,7 +37,7 @@ if (builder.Environment.IsDevelopment())
         .WithReplicas(1);
 }
 
-// AuthServer  
+// AuthServer
 var authServerLaunchProfile = "AbpCachingPlayground.AuthServer";
 var authserver = builder
     .AddProject<Projects.AbpCachingPlayground_AuthServer>("authserver", launchProfileName: authServerLaunchProfile)
@@ -51,7 +50,7 @@ if (migration != null)
     authserver.WaitForCompletion(migration);
 }
 
-// HttpApi.Host  
+// HttpApi.Host
 var httpApiHostLaunchProfile = "AbpCachingPlayground.HttpApi.Host";
 var apiHost = builder
     .AddProject<Projects.AbpCachingPlayground_HttpApi_Host>("httpapihost", launchProfileName: httpApiHostLaunchProfile)
@@ -64,7 +63,7 @@ if (migration != null)
     apiHost.WaitForCompletion(migration);
 }
 
-// Web  
+// Web
 builder
     .AddProject<Projects.AbpCachingPlayground_Web>("web", "AbpCachingPlayground.Web")
     .WithReference(redis).WaitFor(redis);
