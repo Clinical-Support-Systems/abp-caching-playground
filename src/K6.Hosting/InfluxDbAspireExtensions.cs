@@ -8,8 +8,10 @@ namespace K6.Hosting;
 /// </summary>
 public static class InfluxDbAspireExtensions
 {
+    private const int InfluxDbPort = 8086;
+
     /// <summary>
-    ///     Adds an InfluxDB resource to the application model
+    /// Adds an InfluxDB resource to the application model
     /// </summary>
     /// <param name="builder">The distributed application builder</param>
     /// <param name="name">The name of the resource</param>
@@ -24,21 +26,23 @@ public static class InfluxDbAspireExtensions
             .WithImageRegistry(ContainerImageTags.InfluxDbRegistry)
             .WithImageTag(ContainerImageTags.InfluxDbTag)
             .WithEnvironment("INFLUXDB_DB", "k6")
-            .WithEndpoint(0, 8086, name: "http");
+            .WithHttpEndpoint(0, InfluxDbPort, name: InfluxDbResource.PrimaryEndpointName);
     }
 }
+
+/// <summary>
+/// The InfluxDb container resource 
+/// </summary>
 public sealed class InfluxDbResource : ContainerResource, IResourceWithConnectionString
 {
-    private const string DefaultHost = "influxdb";
-    private const int DefaultPort = 8086;
+    internal const string PrimaryEndpointName = "http";
 
     public InfluxDbResource(string name) : base(name)
     {
-        // Define the primary endpoint in the constructor
-        PrimaryEndpoint = new EndpointReference(this, "http");
     }
 
-    public EndpointReference PrimaryEndpoint { get; }
+    private EndpointReference? _primaryEndpoint;
+    public EndpointReference PrimaryEndpoint => _primaryEndpoint ??= new(this, PrimaryEndpointName);
 
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(
