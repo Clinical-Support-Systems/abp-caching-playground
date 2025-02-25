@@ -1,0 +1,128 @@
+﻿@page "/public/products"
+@model AbpCachingPlayground.Web.Pages.Products.PublicProductsModel
+@{
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-4">Our Products</h1>
+            <p class="lead text-muted">Browse our complete product catalog</p>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group mt-3">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Categories</h5>
+                </div>
+                <div class="card-body">
+                    <div class="nav flex-column nav-pills">
+                        <a class="nav-link active" href="#">All Products</a>
+                        <a class="nav-link" href="#">Featured</a>
+                        <a class="nav-link" href="#">New Arrivals</a>
+                        <a class="nav-link" href="#">Special Offers</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Price Range</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <input type="range" class="custom-range" min="0" max="1000" id="priceRange">
+                        <div class="d-flex justify-content-between">
+                            <span>$0</span>
+                            <span id="priceRangeValue">$500</span>
+                            <span>$1000</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary mt-2">Apply Filter</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <span class="text-muted">Showing @Model.Products.Items.Count products</span>
+                </div>
+                <div>
+                    <select class="form-select form-select-sm">
+                        <option>Sort by: Featured</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Newest First</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                @foreach (var product in Model.Products.Items)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 product-card">
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                <i class="fa fa-box fa-4x text-secondary"></i>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">@product.Name</h5>
+                                <p class="card-text text-truncate">@product.Description</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 mb-0">$@product.Price.ToString("0.00")</span>
+                                    <button class="btn btn-sm btn-primary">
+                                        <i class="fa fa-shopping-cart me-1"></i> Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Previous</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            // Price range slider
+            $("#priceRange").on("input", function() {
+                $("#priceRangeValue").text("$" + $(this).val());
+            });
+
+            // For demo purposes only
+            $(".btn-primary").click(function(e) {
+                e.preventDefault();
+                abp.notify.info("This is a demo page for load testing.");
+            });
+        });
+    </script>
+}

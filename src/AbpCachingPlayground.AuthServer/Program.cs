@@ -11,13 +11,11 @@ using Serilog.Events;
 
 namespace AbpCachingPlayground;
 
-public class Program
+public static class Program
 {
-    public static IConfiguration Configuration { get; private set; }
-
     public static async Task<int> Main(string[] args)
     {
-        Configuration = new ConfigurationBuilder()
+        var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", false, true)
             .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true,
@@ -26,7 +24,7 @@ public class Program
             .AddEnvironmentVariables()
             .Build();
 
-        var cacheProvider = Configuration["CachingDemo:Provider"];
+        var cacheProvider = config.GetValue("CachingDemo:Provider", "redis");
 
         Log.Logger = new LoggerConfiguration()
 #if DEBUG

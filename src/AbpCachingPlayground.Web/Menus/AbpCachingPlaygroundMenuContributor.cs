@@ -114,6 +114,17 @@ public class AbpCachingPlaygroundMenuContributor : IMenuContributor
                 icon: "fa fa-file-alt",
                 requiredPermissionName: AbpCachingPlaygroundPermissions.Products.Default)
         );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                "PublicProducts",
+                l["PublicProducts"],
+                "/public/products",
+                icon: "fa fa-shopping-cart",
+                order: 3
+            )
+        );
+
         return Task.CompletedTask;
     }
 

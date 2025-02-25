@@ -22,11 +22,6 @@ var grafana = builder.AddGrafana("grafana", dashboardsPath: "./../../test/AbpCac
     .WithInfluxDataSource(influxDb, datasourceConfigPath: "./../../test/AbpCachingPlayground.k6/grafana-datasource.yaml")
     .WithDashboardConfig("./../../test/AbpCachingPlayground.k6/grafana-dashboard.yaml");
 
-var k6 = builder.AddK6("k6", scriptPath: "./../../test/AbpCachingPlayground.k6/scenarios/", basicScriptFileName: "basic.js", "burst.js")
-    .WaitFor(grafana)
-    .WithReference(influxDb).WaitFor(influxDb)
-    .WithInfluxDbOutput(influxDb);
-
 // DbMigrator
 IResourceBuilder<ProjectResource>? migration = null;
 if (builder.Environment.IsDevelopment())
@@ -67,5 +62,12 @@ if (migration != null)
 builder
     .AddProject<Projects.AbpCachingPlayground_Web>("web", "AbpCachingPlayground.Web")
     .WithReference(redis).WaitFor(redis);
+
+// K6 load testing
+var k6 = builder.AddK6("k6", scriptPath: "./../../test/AbpCachingPlayground.k6/scenarios/", basicScriptFileName: "basic.js", "burst.js")
+    .WaitFor(grafana)
+    .WithReference(influxDb).WaitFor(influxDb)
+    .WithInfluxDbOutput(influxDb)
+    .WithApiEndpoint(apiHost);
 
 builder.Build().Run();

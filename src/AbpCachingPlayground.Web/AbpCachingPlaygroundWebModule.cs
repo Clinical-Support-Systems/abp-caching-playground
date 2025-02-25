@@ -62,6 +62,8 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.UI.Navigation;
 using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.Studio.Client.AspNetCore;
+using Volo.Abp.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AbpCachingPlayground.Web;
 
@@ -177,6 +179,7 @@ public class AbpCachingPlaygroundWebModule : AbpModule
             options.Conventions.AuthorizePage("/HostDashboard", AbpCachingPlaygroundPermissions.Dashboard.Host);
             options.Conventions.AuthorizePage("/TenantDashboard", AbpCachingPlaygroundPermissions.Dashboard.Tenant);
             options.Conventions.AuthorizePage("/Products/Index", AbpCachingPlaygroundPermissions.Products.Default);
+            options.Conventions.AllowAnonymousToPage("/Public/Products");
         });
     }
 

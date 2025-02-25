@@ -110,20 +110,45 @@ public static class K6AspireExtensions
         // Add environment variables
         dockerArgs.Append("-e K6_INSECURE_SKIP_TLS_VERIFY=true ");
 
-        // Add the APP_HOST environment variable (important for test script)
-        // For Windows hosts use 'host.docker.internal', for Linux use the actual IP
-        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+        // Determine API host URL based on ApiEndpointReference if available
+        string appHostUrl;
+        if (k6Resource.ApiEndpointReference != null)
         {
-            // On Windows, use host.docker.internal but ensure it's properly mapped
-            dockerArgs.Append($"--add-host=host.docker.internal:{hostIp} ");
-            dockerArgs.Append("-e APP_HOST=\"https://host.docker.internal:44319\" ");
+            // Construct the URL from the endpoint reference
+            var scheme = k6Resource.ApiEndpointReference.EndpointName == "https" ? "https" : "http";
+            var port = k6Resource.ApiEndpointReference.Port;
+
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                // On Windows, use host.docker.internal
+                dockerArgs.Append($"--add-host=host.docker.internal:{hostIp} ");
+                appHostUrl = $"{scheme}://host.docker.internal:{port}";
+            }
+            else
+            {
+                // On Linux, use the actual IP address
+                dockerArgs.Append($"--add-host=host.docker.internal:{hostIp} ");
+                appHostUrl = $"{scheme}://{hostIp}:{port}";
+            }
+
+            logger.LogInformation("Using dynamic API URL: {AppHostUrl}", appHostUrl);
         }
         else
         {
-            // On Linux, use the actual IP address
-            dockerArgs.Append($"--add-host=host.docker.internal:{hostIp} ");
-            dockerArgs.Append($"-e APP_HOST=\"https://{hostIp}:44319\" ");
+            // Fallback to default if no API endpoint reference is provided
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                appHostUrl = "https://host.docker.internal:44319";
+            }
+            else
+            {
+                appHostUrl = $"https://{hostIp}:44319";
+            }
+            logger.LogWarning("Using fallback API URL: {AppHostUrl}", appHostUrl);
         }
+
+        // Add the APP_HOST environment variable
+        dockerArgs.Append($"-e APP_HOST=\"{appHostUrl}\" ");
 
         // Add any custom environment variables
         foreach (var env in k6Resource.EnvironmentVariables)
@@ -376,6 +401,21 @@ public static class K6AspireExtensions
 
         return builder;
     }
+
+    public static IResourceBuilder<K6Resource> WithApiEndpoint(this IResourceBuilder<K6Resource> builder,
+        IResourceBuilder<ProjectResource> apiProject)
+    {
+        // Get the endpoint reference from the API project
+        var endpointReference = apiProject.GetEndpoint("https");
+
+        // Store the endpoint reference in the resource for later use
+        builder.Resource.ApiEndpointReference = endpointReference;
+
+        // Add a reference to ensure the dependency is tracked
+        builder.WithReference(endpointReference);
+
+        return builder;
+    }
 }
 
 public sealed class K6Resource : ContainerResource
@@ -396,4 +436,5 @@ public sealed class K6Resource : ContainerResource
     public string? NetworkName { get; set; }
     public bool UseHostNetwork { get; set; } = true;
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
+    public EndpointReference? ApiEndpointReference { get; set; }
 }

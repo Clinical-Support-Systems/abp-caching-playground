@@ -32,7 +32,9 @@ export let options = {
 };
 
 export default function () {
-    const baseUrl = __ENV.APP_HOST || "https://host.docker.internal:44319";
+    let baseUrl = __ENV.APP_HOST || "https://host.docker.internal:44319";
+    baseUrl = baseUrl + "/public/products";
+
     console.log(`Testing against URL: ${baseUrl}`);
 
     const response = http.get(baseUrl);

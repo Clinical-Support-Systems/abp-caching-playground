@@ -93,6 +93,7 @@ namespace AbpCachingPlayground.Products
             await _productListCache.RemoveAsync("Products:*");
         }
 
+        [AllowAnonymous]
         public virtual async Task<PagedResultDto<ProductDto>> GetListAsync(GetProductsInput input)
         {
             // Get all items from cache matching filter criteria
