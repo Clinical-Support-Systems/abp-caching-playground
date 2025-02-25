@@ -22,10 +22,10 @@ var grafana = builder.AddGrafana("grafana", dashboardsPath: "./../../test/AbpCac
     .WithInfluxDataSource(influxDb, datasourceConfigPath: "./../../test/AbpCachingPlayground.k6/grafana-datasource.yaml")
     .WithDashboardConfig("./../../test/AbpCachingPlayground.k6/grafana-dashboard.yaml");
 
-var k6 = builder.AddK6("k6", scriptPath: "./../../test/AbpCachingPlayground.k6/scenarios/basic-crud.js")
+var k6 = builder.AddK6("k6", scriptPath: "./../../test/AbpCachingPlayground.k6/scenarios/", basicScriptFileName: "basic.js", "burst.js")
     .WaitFor(grafana)
+    .WithReference(influxDb).WaitFor(influxDb)
     .WithInfluxDbOutput(influxDb);
-    //.WithHostGatewayAccess(); //"extra_hosts" isn’t a k6 command—it’s a Docker (or container runtime) configuration option.
 
 // DbMigrator
 IResourceBuilder<ProjectResource>? migration = null;

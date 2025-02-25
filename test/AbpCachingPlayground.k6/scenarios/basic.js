@@ -17,17 +17,13 @@ export const options = {
 };
 
 export default function () {
-    const params = {
-        headers: {
-            'Cache-Implementation': __ENV.CACHE_IMPL // 'redis' or 'fusion'
-        }
-    };
 
     // Use a configurable host URL via environment variable
     const baseUrl = __ENV.APP_HOST || "https://host.docker.internal:44319";
+
     console.log(`Testing against URL: ${baseUrl}`);
 
-    const response = http.get(baseUrl, params);
+    const response = http.get(baseUrl);
     check(response, {
         'status is 200': (r) => r.status === 200
     });

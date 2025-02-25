@@ -23,16 +23,15 @@ public static class K6AspireExtensions
     /// <param name="scriptPath">The path to the k6 script file. The script file must be located on the host machine.</param>
     /// <returns>A reference to the <see cref="IResourceBuilder{K6Resource}" /> for further resource configuration.</returns>
     public static IResourceBuilder<K6Resource> AddK6(this IDistributedApplicationBuilder builder, string name,
-        string scriptPath)
+        string scriptPath, string basicScriptFileName, string burstScriptFileName)
     {
         var scriptDir = Path.GetDirectoryName(Path.GetFullPath(scriptPath));
-        var scriptFileName = Path.GetFileName(scriptPath);
 
-        var resource = new K6Resource(name, scriptPath)
+        var resource = new K6Resource(name, Path.Combine(scriptDir, basicScriptFileName))
         {
             // Store the configuration in the resource for later use when running the test
             ScriptDirectory = scriptDir,
-            ScriptFileName = scriptFileName,
+            ScriptFileName = basicScriptFileName,
             ImageRegistry = ContainerImageTags.K6Registry,
             ImageName = ContainerImageTags.K6Image,
             ImageTag = ContainerImageTags.K6Tag
@@ -46,8 +45,9 @@ public static class K6AspireExtensions
             .WithEnvironment("K6_INSECURE_SKIP_TLS_VERIFY", "true")
             .WithEndpoint(0, K6Port, name: "k6-api")
             .WithBindMount(scriptDir, "/scripts")
-            .WithArgs("run", "/scripts/verify.js")
-            .WithTestCommand(scriptFileName);
+            .WithArgs("run", $"/scripts/{basicScriptFileName}")
+            .WithTestCommand(burstScriptFileName)
+            .WithExplicitStart();
 
         return resourceBuilder;
     }
@@ -59,7 +59,7 @@ public static class K6AspireExtensions
 
         builder.WithCommand(
             "run-cache-test",
-            "Run Cache Test",
+            "Run Burst Test",
             context => OnRunTestCommandAsync(builder, context),
             OnUpdateResourceState);
 
@@ -280,7 +280,7 @@ public static class K6AspireExtensions
 
             // Fallback: Get a local IP address that might be accessible from containers
             // Find an IP address that's not a loopback or link-local address
-            var hostEntry = Dns.GetHostEntry(Dns.GetHostName());
+            var hostEntry = await Dns.GetHostEntryAsync(Dns.GetHostName());
             foreach (var ip in hostEntry.AddressList)
             {
                 if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
@@ -306,7 +306,7 @@ public static class K6AspireExtensions
     /// <summary>
     /// Attempts to detect the Aspire network by querying Docker networks
     /// </summary>
-    private static async Task<string> DetectAspireNetworkAsync(ILogger logger)
+    private static async Task<string?> DetectAspireNetworkAsync(ILogger logger)
     {
         try
         {
@@ -328,7 +328,7 @@ public static class K6AspireExtensions
             await p.WaitForExitAsync();
 
             // Look for a network that contains "aspire" in the name
-            var networks = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var networks = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             var aspireNetwork = networks.FirstOrDefault(n => n.Contains("aspire", StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(aspireNetwork))
