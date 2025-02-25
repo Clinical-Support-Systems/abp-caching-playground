@@ -41,6 +41,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using AbpCachingPlayground.Redis.CachingModule;
 
 namespace AbpCachingPlayground;
 
@@ -48,7 +49,7 @@ namespace AbpCachingPlayground;
     typeof(AbpCachingPlaygroundHttpApiModule),
     typeof(AbpAutofacModule),
     typeof(AbpStudioClientAspNetCoreModule),
-    typeof(AbpCachingStackExchangeRedisModule),
+    typeof(PlaygroundRedisCachingModule),
     typeof(AbpDistributedLockingModule),
     typeof(AbpAspNetCoreMvcUiMultiTenancyModule),
     typeof(AbpIdentityAspNetCoreModule),
@@ -57,7 +58,7 @@ namespace AbpCachingPlayground;
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule)
     )]
-public class AbpCachingPlaygroundHttpApiHostModule : AbpModule
+public class AbpCachingPlaygroundHttpApiBaseHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {

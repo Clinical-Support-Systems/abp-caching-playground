@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using AbpCachingPlayground.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -11,8 +13,21 @@ namespace AbpCachingPlayground;
 
 public class Program
 {
+    public static IConfiguration Configuration { get; private set; }
+
     public static async Task<int> Main(string[] args)
     {
+        Configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true,
+                true)
+            .AddCommandLine(args)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var cacheProvider = Configuration["CachingDemo:Provider"];
+
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Debug()
@@ -32,8 +47,13 @@ public class Program
             Log.Information("Starting auth host.");
             var builder = WebApplication.CreateBuilder(args);
             builder.AddServiceDefaults();
-            builder.AddRedisClient("redis");
-            builder.AddRedisDistributedCache("redis");
+
+            if (cacheProvider == "redis")
+            {
+                builder.AddRedisClient("redis");
+                builder.AddRedisDistributedCache("redis");
+            }
+
             builder.AddSqlServerDbContext<AbpCachingPlaygroundDbContext>("Default", options =>
             {
                 options.DisableRetry = true;

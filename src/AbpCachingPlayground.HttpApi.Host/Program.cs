@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using AbpCachingPlayground.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -11,8 +13,21 @@ namespace AbpCachingPlayground;
 
 public class Program
 {
+    public static IConfiguration Configuration { get; private set; }
+
     public static async Task<int> Main(string[] args)
     {
+        Configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true,
+                true)
+            .AddCommandLine(args)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var cacheProvider = Configuration["CachingDemo:Provider"];
+
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Debug()
@@ -32,9 +47,12 @@ public class Program
             Log.Information("Starting api host.");
             var builder = WebApplication.CreateBuilder(args);
             builder.AddServiceDefaults();
-            builder.AddRedisClient("redis");
-            builder.AddRedisDistributedCache("redis");
-            builder.AddRedisMetrics();
+            if (cacheProvider == "redis")
+            {
+                builder.AddRedisClient("redis");
+                builder.AddRedisDistributedCache("redis");
+                builder.AddRedisMetrics();
+            }
             builder.AddSqlServerDbContext<AbpCachingPlaygroundDbContext>("Default", options =>
             {
                 options.DisableRetry = true;
@@ -45,11 +63,11 @@ public class Program
                 .UseSerilog((_, services, loggerConfiguration) =>
                 {
                     loggerConfiguration
-                    #if DEBUG
+#if DEBUG
                         .MinimumLevel.Debug()
-                    #else
+#else
                         .MinimumLevel.Information()
-                    #endif
+#endif
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                         .Enrich.FromLogContext()
@@ -57,7 +75,14 @@ public class Program
                         .WriteTo.Async(c => c.Console())
                         .WriteTo.Async(c => c.AbpStudio(services));
                 });
-            await builder.AddApplicationAsync<AbpCachingPlaygroundHttpApiHostModule>();
+            if (cacheProvider == "redis")
+            {
+                await builder.AddApplicationAsync<AbpCachingPlaygroundHttpApiRedisHostModule>();
+            }
+            else
+            {
+                await builder.AddApplicationAsync<AbpCachingPlaygroundHttpApiFusionHostModule>();
+            }
             var app = builder.Build();
             await app.InitializeApplicationAsync();
             await app.RunAsync();
