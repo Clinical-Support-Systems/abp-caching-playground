@@ -23,8 +23,11 @@ export default function () {
         }
     };
 
-    //const response = http.get("http://localhost:5000/api/cache-test/item/1", params);
-    const response = http.get("https://host.docker.internal:44319/");
+    // Use a configurable host URL via environment variable
+    const baseUrl = __ENV.APP_HOST || "https://host.docker.internal:44319";
+    console.log(`Testing against URL: ${baseUrl}`);
+
+    const response = http.get(baseUrl, params);
     check(response, {
         'status is 200': (r) => r.status === 200
     });

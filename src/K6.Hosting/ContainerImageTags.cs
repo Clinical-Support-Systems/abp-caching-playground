@@ -15,5 +15,5 @@ internal static class ContainerImageTags
     // Grafana image details
     internal const string GrafanaRegistry = "docker.io";
     internal const string GrafanaImage = "grafana/grafana";
-    internal const string GrafanaTag = "8.5.21";
+    internal const string GrafanaTag = "latest";
 }

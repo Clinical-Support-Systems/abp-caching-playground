@@ -42,7 +42,7 @@ public sealed class InfluxDbResource : ContainerResource, IResourceWithConnectio
     }
 
     private EndpointReference? _primaryEndpoint;
-    public EndpointReference PrimaryEndpoint => _primaryEndpoint ??= new(this, PrimaryEndpointName);
+    public EndpointReference PrimaryEndpoint => _primaryEndpoint ??= new EndpointReference(this, PrimaryEndpointName);
 
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create(
